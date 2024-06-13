@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Sueños para la Jubilación</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        #user_comentario {
+            text-align: center;
+            font-style: italic;
+            color: #666;
+            margin-top: 10px;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            color: #333;
+        }
+        input[type="text"], input[type="number"], input[type="date"], textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        input[readonly] {
+            background-color: #e9ecef;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .results {
+            margin-top: 20px;
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .results p {
+            margin: 0;
+            padding: 5px 0;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Calculadora para tu Jubilación</h1>
+    <label for="comentario">Comentario</label>
+        <textarea id="comentario" rows="4" placeholder="Describe en breves palabras lo que son tu sueños"></textarea>
+    <p id="user_comentario" style="display: none;"></p>
+    <form id="formulario">
+        <label for="anos">Cantidad de años</label>
+        <input type="number" id="anos" required>
+
+        <label for="fecha_inicio">Fecha de Inicio</label>
+        <input type="date" id="fecha_inicio" required>
+
+        <label for="tasa_anual">Tasa anual esperada (%)</label>
+        <input type="number" step="0.01" id="tasa_anual" required>
+
+        <label for="capital_original">Capital original ($)</label>
+        <input type="number" step="0.01" id="capital_original" required>
+
+        <label for="aporte_mensual">Aporte mensual ($)</label>
+        <input type="number" step="0.01" id="aporte_mensual" required>
+
+        <label for="tiempo">Tiempo (meses)</label>
+        <input type="text" id="tiempo" readonly>
+
+        <label for="interes_mensual">Interés mensual (%)</label>
+        <input type="text" id="interes_mensual" readonly>
+
+        <button type="button" onclick="calcular()">Calcular</button>
+    </form>
+
+    <div class="results" id="resultados" style="display: none;">
+        <p id="mostrar_anos"></p>
+        <p id="mostrar_fecha_inicio"></p>
+        <p id="mostrar_tasa_anual"></p>
+        <p id="mostrar_capital_original"></p>
+        <p id="mostrar_aporte_mensual"></p>
+        <p id="mostrar_tiempo"></p>
+        <p id="mostrar_interes_mensual"></p>
+        <hr>
+        <p id="capital_final"></p>
+        <p id="fecha_estimada"></p>
+        <p id="rendimiento_mensual"></p>
+    </div>
+</div>
+
+<script>
+function calcular() {
+    const anos = parseInt(document.getElementById('anos').value);
+    const fechaInicio = new Date(document.getElementById('fecha_inicio').value);
+    const tasaAnual = parseFloat(document.getElementById('tasa_anual').value);
+    const capitalOriginal = parseFloat(document.getElementById('capital_original').value);
+    const aporteMensual = parseFloat(document.getElementById('aporte_mensual').value);
+    const comentario = document.getElementById('comentario').value;
+
+    const tasaMensual = Math.pow(1 + tasaAnual / 100, 1 / 12) - 1;
+    const meses = anos * 12;
+
+    document.getElementById('tiempo').value = meses;
+    document.getElementById('interes_mensual').value = (tasaMensual * 100).toFixed(2);
+
+    let capitalFinal = capitalOriginal * Math.pow(1 + tasaMensual, meses);
+    for (let i = 0; i < meses; i++) {
+        capitalFinal += aporteMensual * Math.pow(1 + tasaMensual, meses - i);
+    }
+
+    const fechaEstimada = new Date(fechaInicio);
+    fechaEstimada.setFullYear(fechaEstimada.getFullYear() + anos);
+
+    document.getElementById('mostrar_anos').innerText = `Cantidad de años: ${anos}`;
+    document.getElementById('mostrar_fecha_inicio').innerText = `Fecha de Inicio: ${fechaInicio.toLocaleDateString()}`;
+    document.getElementById('mostrar_tasa_anual').innerText = `Tasa anual esperada: ${tasaAnual}%`;
+    document.getElementById('mostrar_capital_original').innerText = `Capital original: $${capitalOriginal.toFixed(2)}`;
+    document.getElementById('mostrar_aporte_mensual').innerText = `Aporte mensual: $${aporteMensual.toFixed(2)}`;
+    document.getElementById('mostrar_tiempo').innerText = `Tiempo (meses): ${meses}`;
+    document.getElementById('mostrar_interes_mensual').innerText = `Interés mensual: ${(tasaMensual * 100).toFixed(2)}%`;
+    document.getElementById('capital_final').innerText = `Capital final: $${capitalFinal.toFixed(2)}`;
+    document.getElementById('fecha_estimada').innerText = `Fecha estimada: ${fechaEstimada.toLocaleDateString()}`;
+    document.getElementById('rendimiento_mensual').innerText = `Rendimiento mensual de inversión: ${(tasaMensual * 100).toFixed(2)}%`;
+
+    const userComentario = document.getElementById('user_comentario');
+    userComentario.innerText = comentario;
+    userComentario.style.display = 'block';
+
+    document.getElementById('resultados').style.display = 'block';
+}
+</script>
+
+</body>
+</html>
